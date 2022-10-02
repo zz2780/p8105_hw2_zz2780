@@ -77,4 +77,60 @@ data1 %>%
 ```
 60 distinct stations serve A train. And of those 17 are ADA compliant.
 
+
 Problem 2
+```{r}
+library(readxl)
+```
+
+Tidy Mr.Trash Wheel
+```{r}
+data2=read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet="Mr. Trash Wheel", range="A2:N535")%>%
+    janitor::clean_names() %>% 
+  na.omit()
+data2$sports_balls<-as.integer(data2$sports_balls)
+data2$dumpster<-as.numeric(data2$dumpster)
+```
+
+Tidy Professor Trash Wheel
+```{r}
+data2_1=read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet="Professor Trash Wheel", range="A2:N117")%>%
+    janitor::clean_names() %>% 
+  na.omit()
+data2_1$sports_balls<-as.integer(data2_1$sports_balls)
+```
+
+Combine two data sets
+```{r}
+data2$type<-"Mr. Trash Wheel"
+data2<-data2%>%relocate(type, .after=dumpster)
+data2_1$type<-"Professor Trash Wheel"
+data2_1<-data2_1%>%relocate(type, .after=dumpster)
+data2_tidy=
+  bind_rows(data2, data2_1)%>%
+  janitor::clean_names() %>%
+  arrange(dumpster,type)
+```
+
+The resulting data set contains `r nrow(data2_tidy)` observations and `r ncol(data2_tidy)` variables. Type indicates which trash wheel is used. The data set includes how many weights (ton) and volume (cubic yard) each trash wheel collected on each date at different dumpsters. And it records the number of different types of trash that were picked up, as well as the number of homes it can power.
+
+What was the total weight of trash collected by Professor Trash Wheel? 
+```{r}
+data2_tidy%>%
+  filter(type=="Professor Trash Wheel")%>%
+  pull(weight_tons)%>%
+sum
+```
+The total weight of trash collected by Professor Trash Wheel was 135.5 tons.
+
+What was the total number of sports balls collected by Mr. Trash Wheel in 2020?
+```{r}
+data2_tidy%>%
+  filter(type=="Mr. Trash Wheel", year==2020)%>%
+  pull(sports_balls)%>%
+sum
+```
+856 sports balls were collected by Mr. Trash Wheel in 2020.
+
+
+
