@@ -24,6 +24,7 @@ data1<-read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
     starts_with("route"), entry, exit_only, vending, entrance_type, 
     ada) %>% 
   mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+head(data1)
 ```
 The data is not tidy. I imported the data, selected variables of interest, and converted entry variable from character to logic. The data set origianlly has 1868 rows (observations) and 20 variables(columns). Route number should be a variable and the values should be another variable. We need to pivot the two variables from wider to longer format.
 
@@ -90,6 +91,7 @@ data2=read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet="Mr. 
   na.omit()
 data2$sports_balls<-as.integer(data2$sports_balls)
 data2$dumpster<-as.numeric(data2$dumpster)
+head(data2)
 ```
 
 Tidy Professor Trash Wheel
@@ -98,6 +100,7 @@ data2_1=read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet="Pr
     janitor::clean_names() %>% 
   na.omit()
 data2_1$sports_balls<-as.integer(data2_1$sports_balls)
+head(data2_1)
 ```
 
 Combine two data sets
@@ -110,6 +113,7 @@ data2_tidy=
   bind_rows(data2, data2_1)%>%
   janitor::clean_names() %>%
   arrange(dumpster,type)
+head(data2_tidy)
 ```
 
 The resulting data set contains `r nrow(data2_tidy)` observations and `r ncol(data2_tidy)` variables. Type indicates which trash wheel is used. The data set includes how many weights (ton) and volume (cubic yard) each trash wheel collected on each date at different dumpsters. And it records the number of different types of trash that were picked up, as well as the number of homes it can power.
@@ -132,5 +136,61 @@ sum
 ```
 856 sports balls were collected by Mr. Trash Wheel in 2020.
 
+Problem 3
+Tidying pols-month.csv
+```{r}
+data3_1=
+    read_csv("data/fivethirtyeight_datasets/pols-month.csv")%>%
+    janitor::clean_names()%>%
+    separate(mon, into=c("year","month","day"))%>%
+    mutate(year=as.numeric(year))%>%
+    mutate(month=tolower(month.abb[as.numeric(month)]))%>%
+    mutate(president=ifelse(prez_gop==1,"Republican", "Democratic"))%>%
+    relocate(president,.after=day)%>%
+    select(-prez_gop, -prez_dem, -day)
+head(data3_1)
+```
+Tidying snp.csv
+```{r}
+data3_2=
+    read_csv("data/fivethirtyeight_datasets/snp.csv")%>%
+    janitor::clean_names()%>%
+    separate(date, into=c("month","day","year"), sep="/")%>%
+    mutate(year=as.numeric(year))%>%
+    mutate(month=tolower(month.abb[as.numeric(month)]))%>%
+    mutate(year=ifelse(year<16, 2000+year,1900+year))%>%
+    relocate(year)%>%
+    relocate(month, .after=year)%>%
+    select(-day)
+head(data3_2)
+```
 
+Tidying unemployment.csv
+```{r}
+data3_3=
+    read_csv("data/fivethirtyeight_datasets/unemployment.csv")%>%
+    janitor::clean_names()%>%
+    mutate(year=as.numeric(year))%>%
+    pivot_longer(
+      jan:dec,
+      names_to="month",
+      values_to="unemployment_rate"
+    )
+head(data3_3)
+```
+Merge data
+```{r}
+data3=
+  left_join(data3_1, data3_2, by=c("year","month"))
+data3=
+  left_join(data3, data3_3, by=c("year","month"))
+head(data3)
+```
 
+The first data set (pols-month.csv) contains the number of democratic or republican politicians by year and month from 1947 to 2015. There are `r nrow(data3_1)` observations and `r ncol(data3_1)` variables. The variable president indicates the party U.S. President belongs to at the associated date.
+
+The second data set (snp.csv) contains the date and the closing values of the S&P stock index on the associated date. There are `r nrow(data3_2)` observations and `r ncol(data3_2)` variables ranging from 1950-2015.
+
+The third data set (unemployment.csv) contains the year and month and the percentage of unemployment at the associated month of year. There are `r nrow(data3_3)` observations and `r ncol(data3_3)` variables from 1948 to 2015.
+
+After merging, there are `r nrow(data3)` observations and `r ncol(data3)` variables from 1947 to 2015 as I left joined the two data sets with the first data set. So the number of observation should be the same as the first data set, but with two additional variables (close and unemployment) from the rest of data sets. 
