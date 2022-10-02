@@ -9,3 +9,72 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+```
+Problem 1
+
+Import data
+```{r}
+data1<-read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
+                col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c")) %>% 
+  janitor::clean_names() %>% 
+  select(
+    line, station_name, station_latitude, station_longitude, 
+    starts_with("route"), entry, exit_only, vending, entrance_type, 
+    ada) %>% 
+  mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+```
+The data is not tidy. I imported the data, selected variables of interest, and converted entry variable from character to logic. The data set origianlly has 1868 rows (observations) and 20 variables(columns). Route number should be a variable and the values should be another variable. We need to pivot the two variables from wider to longer format.
+
+How many distinct stations are there?
+```{r}
+data1 %>% 
+  filter(ada == TRUE) %>% 
+  select(station_name, line) %>% 
+  distinct
+```
+There are 84 distinct stations.
+
+How many stations are ADA compliant?
+```{r}
+data1 %>% 
+  filter(ada == TRUE) %>% 
+  select(station_name, line) %>% 
+  distinct
+```
+84 stations are ADA compliant.
+
+What proportion of station entrances / exits without vending allow entrance?
+```{r}
+data1 %>% 
+  filter(vending == "NO") %>% 
+  pull(entry) %>% 
+  mean
+```
+37.7% of the station entrances/exists are without vending allow entrance.
+
+Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+
+```{r}
+data1 %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_num",
+    values_to = "route") %>% 
+  filter(route == "A") %>% 
+  select(station_name, line) %>% 
+  distinct
+
+data1 %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_num",
+    values_to = "route") %>% 
+  filter(route == "A", ada == TRUE) %>% 
+  select(station_name, line) %>% 
+  distinct
+```
+60 distinct stations serve A train. And of those 17 are ADA compliant.
+
+Problem 2
