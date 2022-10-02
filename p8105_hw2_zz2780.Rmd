@@ -189,7 +189,7 @@ head(data3)
 
 The first data set (pols-month.csv) contains the number of democratic or republican politicians by year and month from 1947 to 2015. There are `r nrow(data3_1)` observations and `r ncol(data3_1)` variables. The variable president indicates the party U.S. President belongs to at the associated date.
 
-The second data set (snp.csv) contains the date and the closing values of the S&P stock index on the associated date. There are `r nrow(data3_2)` observations and `r ncol(data3_2)` variables ranging from 1950-2015.
+The second data set (snp.csv) contains the date and the closing values of the S&P stock index on the associated date. There are `r nrow(data3_2)` observations and `r ncol(data3_2)` variables ranging from 1950 to 2015.
 
 The third data set (unemployment.csv) contains the year and month and the percentage of unemployment at the associated month of year. There are `r nrow(data3_3)` observations and `r ncol(data3_3)` variables from 1948 to 2015.
 
